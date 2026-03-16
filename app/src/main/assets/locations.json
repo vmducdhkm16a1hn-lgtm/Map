@@ -1,0 +1,99 @@
+[
+  {
+    "id": 1,
+    "name": "Tràng An",
+    "description": "Khu du lịch sinh thái Tràng An - Di sản thế giới UNESCO",
+    "latitude": 20.2525,
+    "longitude": 105.9000,
+    "imageRes": 0
+  },
+  {
+    "id": 2,
+    "name": "Tam Cốc - Bích Động",
+    "description": "Vịnh Hạ Long trên cạn, nổi tiếng với 3 hang động",
+    "latitude": 20.2167,
+    "longitude": 105.9333,
+    "imageRes": 0
+  },
+  {
+    "id": 3,
+    "name": "Cố đô Hoa Lư",
+    "description": "Kinh đô đầu tiên của nhà nước phong kiến Việt Nam",
+    "latitude": 20.2803,
+    "longitude": 105.9058,
+    "imageRes": 0
+  },
+  {
+    "id": 4,
+    "name": "Chùa Bái Đính",
+    "description": "Chùa lớn nhất Đông Nam Á với nhiều kỷ lục Việt Nam",
+    "latitude": 20.3014,
+    "longitude": 105.8639,
+    "imageRes": 0
+  },
+  {
+    "id": 5,
+    "name": "Vườn Quốc gia Cúc Phương",
+    "description": "Vườn quốc gia đầu tiên của Việt Nam",
+    "latitude": 20.3500,
+    "longitude": 105.5833,
+    "imageRes": 0
+  },
+  {
+    "id": 6,
+    "name": "Kênh Gà - Vân Trình",
+    "description": "Khu du lịch sinh thái suối khoáng nổi tiếng",
+    "latitude": 20.3892,
+    "longitude": 105.8681,
+    "imageRes": 0
+  },
+  {
+    "id": 7,
+    "name": "Nhà thờ đá Phát Diệm",
+    "description": "Công trình kiến trúc độc đáo kết hợp Đông - Tây",
+    "latitude": 20.0922,
+    "longitude": 106.0917,
+    "imageRes": 0
+  },
+  {
+    "id": 8,
+    "name": "Hồ Đồng Chương",
+    "description": "Hồ nước ngọt đẹp giữa vùng núi đá vôi",
+    "latitude": 20.2700,
+    "longitude": 105.8100,
+    "imageRes": 0
+  },
+  {
+    "id": 9,
+    "name": "Động Thiên Hà",
+    "description": "Hang động tuyệt đẹp với nhũ đá kỳ thú",
+    "latitude": 20.2580,
+    "longitude": 105.9120,
+    "imageRes": 0
+  },
+  {
+    "id": 10,
+    "name": "Vân Long",
+    "description": "Khu bảo tồn thiên nhiên đất ngập nước Vân Long",
+    "latitude": 20.3167,
+    "longitude": 105.8833,
+    "imageRes": 0
+  },
+  {
+    "id": 11,
+    "name": "Chùa Bảo Tháp",
+    "description": "Chùa cổ có lịch sử lâu đời",
+    "latitude": 20.2450,
+    "longitude": 105.9200,
+    "imageRes": 0
+  },
+  {
+    "id": 12,
+    "name": "Đền Trần Thương",
+    "description": "Đền thờ các vua nhà Trần",
+    "latitude": 20.2900,
+    "longitude": 105.9100,
+    "imageRes": 0
+  }
+]
+
