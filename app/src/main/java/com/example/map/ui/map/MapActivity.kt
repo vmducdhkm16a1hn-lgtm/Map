@@ -379,6 +379,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             checkLocationPermissionAndGetLocation()
         }
 
+        // NÚT ĐƯA VỀ KHU VỰC GỢI Ý BAN ĐẦU (giống hành vi "Explore this area" của Google Maps)
+        binding.fabResetMap.setOnClickListener {
+            returnToSuggestedArea()
+        }
+
         // NÚT CHỈ ĐƯỜNG - Vẽ route từ vị trí hiện tại đến địa điểm
         binding.btnGetDirections.setOnClickListener {
             // Lấy vị trí hiện tại và địa điểm được chọn từ ViewModel
@@ -706,5 +711,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } catch (e: SecurityException) {
             Toast.makeText(this, "Lỗi quyền vị trí!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Đưa bản đồ về vùng địa điểm gợi ý ban đầu của Ninh Bình
+    private fun returnToSuggestedArea() {
+        val map = googleMap ?: return
+
+        // Xóa marker tìm kiếm tạm thời nếu có
+        searchMarker?.remove()
+        searchMarker = null
+
+        // Xóa route hiện tại
+        currentPolyline?.remove()
+        currentPolyline = null
+        viewModel.clearRoute()
+
+        // Bỏ chọn địa điểm để ẩn info card
+        binding.cardLocationInfo.visibility = View.GONE
+
+        // Nạp lại marker gợi ý ban đầu
+        viewModel.locations.value?.let { locations ->
+            addMarkersToMap(map, locations)
+        }
+
+        // Đưa camera về khu vực Ninh Bình như lúc mở app
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(ninhBinhCenter, 10f))
     }
 }

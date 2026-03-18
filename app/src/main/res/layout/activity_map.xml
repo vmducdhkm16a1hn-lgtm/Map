@@ -61,6 +61,18 @@
 
     </androidx.cardview.widget.CardView>
 
+    <!-- FAB Button - Đưa map về khu vực gợi ý ban đầu (giống Google Maps) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabResetMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="Khu vực này"
+        android:src="@drawable/ic_menu_search"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/fabMyLocation" />
+
     <!-- FAB Button - Lấy vị trí hiện tại -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabMyLocation"
