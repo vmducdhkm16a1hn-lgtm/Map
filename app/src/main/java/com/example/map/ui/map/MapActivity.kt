@@ -15,7 +15,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 // App modules - Các class của project
 import com.example.map.R
 import com.example.map.data.model.LocationClusterItem
@@ -38,7 +37,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 
 // Geocoder - Để search địa điểm (fallback cho Places API)
 import android.location.Geocoder
-import com.example.map.ui.adater.SuggestionsAdapter
+import com.example.map.ui.adapter.SuggestionsAdapter
 import java.util.Locale
 
 // MAP ACTIVITY - Activity chính hiển thị bản đồ Ninh Bình

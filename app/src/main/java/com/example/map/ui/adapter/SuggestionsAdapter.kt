@@ -1,4 +1,4 @@
-package com.example.map.ui.adater
+package com.example.map.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
