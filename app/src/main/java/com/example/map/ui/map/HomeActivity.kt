@@ -32,7 +32,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         adapter = HomeLocationAdapter(
-            onCardClick = { openMapWithLocation(it) },
+            onCardClick = { showLocationDetail(it) },
             onMapClick = { openMapWithLocation(it) }
         )
         binding.rvLocations.layoutManager = LinearLayoutManager(this)
@@ -123,6 +123,11 @@ class HomeActivity : AppCompatActivity() {
 
             else -> CATEGORY_PHOTO
         }
+    }
+
+    private fun showLocationDetail(location: TouristLocation) {
+        LocationDetailBottomSheet.newInstance(location)
+            .show(supportFragmentManager, LocationDetailBottomSheet.TAG)
     }
 
     private fun openMapWithLocation(location: TouristLocation) {

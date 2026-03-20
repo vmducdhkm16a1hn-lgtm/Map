@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.map.R
 import com.example.map.data.model.TouristLocation
 
@@ -43,19 +45,41 @@ class HomeLocationAdapter(
         fun bind(item: TouristLocation) {
             tvName.text = item.name
             tvDesc.text = item.description
-            tvAddress.text = "📍 Ninh Bình"
-            tvRating.text = "⭐ 4.8"
+            tvAddress.text = "📍 ${item.address}"
+            val reviewText = if (item.reviewCount > 0) " (${formatCount(item.reviewCount)})" else ""
+            tvRating.text = "⭐ ${"%.1f".format(item.rating)}$reviewText"
             tvCategoryTag.text = when (detectCategory(item)) {
                 "spiritual" -> "🏛 Du lịch tâm linh"
                 "nature" -> "🌿 Thiên nhiên"
                 else -> "📸 Điểm chụp ảnh"
             }
 
-            // ...existing code... (if later you add image url/res in model, load into imgPreview)
+            // Load image using Glide
+            if (item.imageUrl.isNotEmpty()) {
+                Glide.with(itemView.context)
+                    .load(item.imageUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .centerCrop()
+                    .into(imgPreview)
+            } else if (item.imageRes != 0) {
+                Glide.with(itemView.context)
+                    .load(item.imageRes)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .centerCrop()
+                    .into(imgPreview)
+            } else {
+                imgPreview.setImageResource(R.drawable.ic_launcher_background)
+            }
             imgPreview.contentDescription = item.name
 
             itemView.setOnClickListener { onCardClick(item) }
             btnMap?.setOnClickListener { onMapClick(item) }
+        }
+
+        private fun formatCount(count: Int): String {
+            return if (count >= 1000) "${"%.1f".format(count / 1000.0)}k" else count.toString()
         }
 
         private fun detectCategory(item: TouristLocation): String {
