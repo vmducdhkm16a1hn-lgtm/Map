@@ -174,9 +174,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
     // SETUP SUGGESTIONS RECYCLERVIEW - Khởi tạo RecyclerView gợi ý
-    // ══════════════════════════════════════════════════════════════
     private fun setupSuggestionsRecyclerView() {
         // Khởi tạo adapter với callback khi click vào suggestion
         suggestionsAdapter = SuggestionsAdapter { suggestion ->
@@ -192,9 +190,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
     // SHOW/HIDE SUGGESTIONS - Hiển thị/ẩn dropdown gợi ý
-    // ══════════════════════════════════════════════════════════════
+
     private fun showSuggestions() {
         binding.suggestionsCard.visibility = View.VISIBLE
     }
@@ -239,10 +236,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
-    // ══════════════════════════════════════════════════════════════
     // SHOW AUTOCOMPLETE SUGGESTIONS - Hiển thị gợi ý tự động
     // Hiển thị trong RecyclerView dropdown dưới SearchView
-    // ══════════════════════════════════════════════════════════════
     private fun showAutocompleteSuggestions(query: String) {
         try {
             // Sử dụng Geocoder để tìm gợi ý (miễn phí)

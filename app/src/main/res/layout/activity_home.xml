@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7F6">
+    android:background="@color/white">
 
     <LinearLayout
         android:id="@+id/headerLayout"
@@ -29,8 +29,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Ninh Binh Travel"
-            android:textColor="#102A43"
+            android:text="Ninh Bình Tourism"
+            android:textColor="@color/black"
             android:textSize="38sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -42,7 +42,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:background="@android:color/white"
+        android:background="@color/material_dynamic_neutral95"
         android:iconifiedByDefault="false"
         android:queryHint="Tìm kiếm địa điểm..."
         app:layout_constraintEnd_toEndOf="parent"
@@ -75,33 +75,37 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="Tất cả"
-                app:chipBackgroundColor="@color/chip_all_selector"
+                android:textColor="@color/black"
+                app:chipBackgroundColor="#FFFFFF"
                 app:chipIconVisible="false"
-                app:textStartPadding="14dp"
-                app:textEndPadding="14dp" />
+                app:textEndPadding="14dp"
+                app:textStartPadding="14dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipSpiritual"
-                style="@style/Widget.Material3.Chip.Assist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🏛 Du lịch tâm linh"
+                android:textColor="@color/black"
+                app:chipBackgroundColor="#FFFFFF"
                 app:chipIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPhoto"
-                style="@style/Widget.Material3.Chip.Assist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="📸 Điểm chụp ảnh"
+                android:textColor="@color/black"
+                app:chipBackgroundColor="#FFFFFF"
                 app:chipIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipNature"
-                style="@style/Widget.Material3.Chip.Assist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🌿 Thiên nhiên"
+                android:textColor="@color/black"
+                app:chipBackgroundColor="#FFFFFF"
                 app:chipIconVisible="false" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -119,5 +123,109 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/categoryScroll" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/detailBottomSheet"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:translationZ="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@android:color/white">
+
+            <TextView
+                android:id="@+id/tvDetailName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/tvDetailRating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvDetailIntro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tvDetailAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvDetailOpenClose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvDetailCost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddToPlan"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="Thêm vào lịch trình"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDetailDirections"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Chỉ đường"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

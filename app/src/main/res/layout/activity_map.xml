@@ -32,7 +32,7 @@
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:background="@android:color/white"
+            android:background="@color/white"
             android:iconifiedByDefault="false"
             android:queryHint="Tìm địa điểm ở Ninh Bình..." />
 
@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxHeight="200dp"
-            android:background="@android:color/white" />
+            android:background="@color/white" />
 
     </androidx.cardview.widget.CardView>
 
@@ -70,8 +70,9 @@
         android:layout_marginBottom="12dp"
         android:contentDescription="Khu vực này"
         android:src="@drawable/ic_menu_search"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/fabMyLocation" />
+        app:backgroundTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/fabMyLocation"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- FAB Button - Lấy vị trí hiện tại -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -81,6 +82,7 @@
         android:layout_margin="16dp"
         android:contentDescription="Vị trí của tôi"
         android:src="@drawable/ic_menu_mylocation"
+        app:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
