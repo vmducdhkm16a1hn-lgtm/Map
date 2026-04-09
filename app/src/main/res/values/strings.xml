@@ -1,4 +1,41 @@
 <resources>
     <string name="app_name">Ninh Bình Tourism</string>
     <string name="google_maps_key" translatable="false">${MAPS_API_KEY}</string>
+
+    <string name="home_default_address">📍 Ninh Bình</string>
+    <string name="home_default_rating">⭐ 4.8</string>
+    <string name="home_category_spiritual">🏛 Du lịch tâm linh</string>
+    <string name="home_category_nature">🌿 Thiên nhiên</string>
+    <string name="home_category_photo">📸 Điểm chụp ảnh</string>
+
+    <string name="detail_address_format">📍 %1$s, Ninh Bình</string>
+    <string name="detail_rating_format">⭐ %1$s (%2$d đánh giá)</string>
+
+    <string name="detail_open_time_spiritual">🕒 05:00 - 21:00</string>
+    <string name="detail_open_time_nature">🕒 06:00 - 18:30</string>
+    <string name="detail_open_time_photo">🕒 06:00 - 20:00</string>
+
+    <string name="detail_cost_spiritual">• Vé tham quan: Miễn phí\n• Xe điện: 60.000đ/người\n• Dâng hương: 50.000đ - 200.000đ</string>
+    <string name="detail_cost_nature">• Vé tham quan: 100.000đ/người\n• Thuyền: 150.000đ/chuyến\n• Bãi xe: 10.000đ</string>
+    <string name="detail_cost_photo">• Vé vào cổng: 120.000đ/người\n• Thuê trang phục: 80.000đ\n• Gửi xe: 10.000đ</string>
+
+    <string name="detail_tips_spiritual">• Mặc lịch sự khi vào khu tâm linh.\n• Đi sớm để tránh đông và nắng gắt.\n• Mang nước uống và giày mềm để đi bộ lâu.</string>
+    <string name="detail_tips_nature">• Nên mang mũ, kem chống nắng và thuốc côn trùng.\n• Chuẩn bị giày chống trơn khi đi thuyền hoặc leo dốc.\n• Không xả rác để bảo vệ cảnh quan thiên nhiên.</string>
+    <string name="detail_tips_photo">• Chọn khung giờ sáng sớm hoặc chiều muộn để chụp ảnh đẹp.\n• Mang pin dự phòng vì khu tham quan rộng.\n• Luôn kiểm tra thời tiết trước khi đi.</string>
+
+    <string name="map_search_hint">Tìm địa điểm ở Ninh Bình</string>
+    <string name="map_btn_get_directions">Chỉ đường</string>
+    <string name="map_btn_draw_route">Vẽ tuyến</string>
+    <string name="home_added_to_itinerary">Đã thêm %1$s vào lịch trình</string>
+    <string name="home_add_to_itinerary">Thêm vào lịch trình</string>
+
+    <string name="home_search_hint">Tìm kiếm địa điểm...</string>
+    <string name="home_itinerary_count">Lịch trình (%1$d)</string>
+    <string name="home_itinerary_count_zero">Lịch trình (0)</string>
+    <string name="home_already_in_itinerary">%1$s đã có trong lịch trình</string>
+
+    <string name="itinerary_title">Lịch trình của bạn</string>
+    <string name="itinerary_empty">Chưa có địa điểm nào trong lịch trình.</string>
+    <string name="itinerary_remove">Xóa</string>
+    <string name="itinerary_removed">Đã xóa %1$s khỏi lịch trình</string>
 </resources>
