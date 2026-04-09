@@ -3,9 +3,6 @@ package com.example.map.data.model
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
 
-/**
- * ClusterItem wrapper cho TouristLocation để sử dụng với Marker Clustering
- */
 class LocationClusterItem(
     val location: TouristLocation
 ) : ClusterItem {
