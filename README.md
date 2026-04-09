@@ -1,153 +1,150 @@
-# Ninh Bình Map App
+# Ninh Binh Tourism App (Map)
 
-Ứng dụng Android hiển thị các địa điểm du lịch tại Ninh Bình với Google Maps.
+## 1) Tong quan du an
+Ung dung Android gioi thieu dia diem du lich Ninh Binh, gom 3 man chinh:
+- `Home`: danh sach dia diem, bo loc theo danh muc, tim kiem, them vao lich trinh.
+- `Location Detail`: xem thong tin chi tiet dia diem.
+- `Map`: hien marker, lay vi tri hien tai, ve tuyen duong den dia diem da chon.
+- `Itinerary`: quan ly danh sach dia diem da them vao lich trinh.
 
-## Tính năng đã triển khai
+Du an su dung Kotlin + ViewBinding + MVVM (cho man hinh Map) + Google Maps + Directions API.
 
-### ✅ 1. Hiển thị Google Map
-- Tích hợp Google Maps SDK
-- Zoom vào khu vực Ninh Bình khi khởi động
-- UI controls: zoom, compass
+---
 
-### ✅ 2. Hiển thị nhiều địa điểm (Markers)
-- **12 địa điểm du lịch** nổi tiếng tại Ninh Bình:
-  - Tràng An (UNESCO)
-  - Tam Cốc - Bích Động
-  - Cố đô Hoa Lư
-  - Chùa Bái Đính
-  - Vườn Quốc gia Cúc Phương
-  - Kênh Gà - Vân Trình
-  - Nhà thờ đá Phát Diệm
-  - Hồ Đồng Chương
-  - Động Thiên Hà
-  - Vân Long
-  - Chùa Bảo Tháp
-  - Đền Trần Thương
+## 2) Chuc nang da hoan thien
 
-### ✅ 3. Lấy vị trí hiện tại
-- Request runtime permissions cho location
-- FusedLocationProviderClient để lấy vị trí
-- FAB button để lấy vị trí hiện tại
-- Hiển thị "My Location" dot trên map
+### 2.1 Home (`HomeActivity`)
+- Hien thi danh sach dia diem du lich tu `assets/locations.json`.
+- Tim kiem theo ten/mo ta.
+- Loc theo chip danh muc (`Tat ca`, `Tam linh`, `Diem chup anh`, `Thien nhien`).
+- Bam vao card de mo trang chi tiet.
+- Bam nut `+` tren card de them vao lich trinh.
+- Nut `Lich trinh (n)` mo man hinh lich trinh, dong bo so luong theo du lieu luu.
 
-### ✅ 4. Vẽ đường đi (Polyline)
-- Tích hợp Google Directions API
-- Vẽ polyline từ vị trí hiện tại đến địa điểm
-- Auto zoom để hiển thị toàn bộ route
-- Xóa đường đi cũ khi chọn địa điểm mới
+### 2.2 Chi tiet dia diem (`LocationDetailActivity`)
+- Hien thi anh, ten, mo ta, dia chi, rating, gio mo cua, chi phi, tips.
+- Nut mo map noi bo (`MapActivity`) voi thong tin dia diem dang xem.
+- Nut mo Google Maps de dan duong ngoai app.
 
-### ✅ 5. Đọc dữ liệu từ JSON
-- File `locations.json` trong folder `assets`
-- Parse JSON bằng Gson
-- Fallback data nếu JSON bị lỗi
+### 2.3 Ban do (`MapActivity` + `MapViewModel`)
+- Hien Google Map tap trung khu vuc Ninh Binh.
+- Hien marker cac dia diem du lich (co clustering).
+- Lay vi tri hien tai (Fused Location Provider).
+- Ve polyline tu vi tri hien tai den dia diem da chon.
+- Nhanh `fabResetMap` de dua map ve trang thai goi y ban dau.
+- UI hien tai chi con **1 nut ve tuyen** trong card thong tin dia diem.
 
-### ✅ 6. Google Maps Clustering
-- Sử dụng `android-maps-utils` library
-- Tự động group markers khi zoom out
-- Mở rộng clusters khi zoom in
-- Click vào marker hiển thị thông tin
+### 2.4 Lich trinh (`ItineraryActivity`)
+- Hien danh sach dia diem da them.
+- Trang thai rong (empty state) neu chua co du lieu.
+- Xoa tung dia diem khoi lich trinh.
+- Du lieu lich trinh duoc luu bang `SharedPreferences` (JSON/Gson).
 
-### ✅ 7. Chuyển sang Google Maps App
-- Nút "Mở Google Maps" để chỉ đường
-- Deep link vào Google Maps Navigation
-- Fallback sang browser nếu không có app
+---
 
-## Cấu trúc dự án
+## 3) Cau truc code theo tinh nang
 
-```
-app/
-├── src/main/
-│   ├── assets/
-│   │   └── locations.json          # Dữ liệu địa điểm
-│   ├── java/com/example/map/
-│   │   ├── data/
-│   │   │   ├── model/
-│   │   │   │   ├── Location.kt              # Model TouristLocation
-│   │   │   │   ├── LocationClusterItem.kt   # ClusterItem wrapper
-│   │   │   │   └── DirectionsResponse.kt    # API response model
-│   │   │   ├── remote/
-│   │   │   │   ├── DirectionsApiService.kt
-│   │   │   │   └── RetrofitClient.kt
-│   │   │   └── repository/
-│   │   │       └── LocationRepository.kt    # Đọc JSON từ assets
-│   │   ├── ui/
-│   │   │   └── map/
-│   │   │       ├── MapActivity.kt           # Main activity
-│   │   │       └── MapViewModel.kt          # MVVM ViewModel
-│   │   └── utils/
-│   │       └── PolylineUtils.kt             # Decode polyline
-│   └── res/
-│       ├── layout/
-│       │   └── activity_map.xml
-│       └── values/
-│           └── themes.xml
-```
+## 3.1 UI / Screen
+- `app/src/main/java/com/example/map/ui/map/HomeActivity.kt`
+- `app/src/main/java/com/example/map/ui/map/LocationDetailActivity.kt`
+- `app/src/main/java/com/example/map/ui/map/MapActivity.kt`
+- `app/src/main/java/com/example/map/ui/map/MapViewModel.kt`
+- `app/src/main/java/com/example/map/ui/map/ItineraryActivity.kt`
 
-## Cài đặt
+## 3.2 Adapter
+- `app/src/main/java/com/example/map/ui/adapter/HomeLocationAdapter.kt`
+- `app/src/main/java/com/example/map/ui/adapter/ItineraryAdapter.kt`
 
-### 1. Thêm Google Maps API Key
+## 3.3 Data / Repository / API
+- `app/src/main/java/com/example/map/data/model/Location.kt` (data class `TouristLocation`)
+- `app/src/main/java/com/example/map/data/model/LocationClusterItem.kt`
+- `app/src/main/java/com/example/map/data/model/DirectionsResponse.kt`
+- `app/src/main/java/com/example/map/data/repository/LocationRepository.kt`
+- `app/src/main/java/com/example/map/data/repository/ItineraryRepository.kt`
+- `app/src/main/java/com/example/map/data/remote/DirectionsApiService.kt`
+- `app/src/main/java/com/example/map/data/remote/RetrofitClient.kt`
+- `app/src/main/java/com/example/map/utils/PolylineUtils.kt`
 
-Tạo file `local.properties` trong thư mục root:
+## 3.4 Layout / Resource
+- `app/src/main/res/layout/activity_home.xml`
+- `app/src/main/res/layout/item_home_location.xml`
+- `app/src/main/res/layout/activity_location_detail.xml`
+- `app/src/main/res/layout/activity_map.xml`
+- `app/src/main/res/layout/activity_itinerary.xml`
+- `app/src/main/res/layout/item_itinerary_location.xml`
+- `app/src/main/res/values/strings.xml`
+- `app/src/main/assets/locations.json`
+
+## 3.5 Cau hinh app
+- `app/src/main/AndroidManifest.xml`
+- `app/build.gradle.kts`
+- `local.properties` (khai bao `MAPS_API_KEY`)
+
+---
+
+## 4) Luong su dung chinh
+1. Mo app vao `HomeActivity`.
+2. Chon dia diem:
+   - Bam card -> `LocationDetailActivity`.
+   - Bam `+` -> them vao lich trinh.
+3. Tu `Home`, bam `Lich trinh (n)` -> `ItineraryActivity`.
+4. Tu `Detail`, mo `MapActivity` de xem marker va ve tuyen den diem den.
+
+---
+
+## 5) Huong dan setup nhanh
+
+### 5.1 Yeu cau
+- Android Studio (ban moi)
+- JDK 11
+- Android SDK (minSdk 24, targetSdk 35)
+- Google Maps API key (Directions + Maps Android SDK)
+
+### 5.2 Khai bao API key
+Trong `local.properties`:
 
 ```properties
-MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+MAPS_API_KEY=YOUR_REAL_API_KEY
 ```
 
-### 2. Enable APIs trên Google Cloud Console
-
-- Maps SDK for Android
-- Directions API
-- Geolocation API
-
-### 3. Build & Run
-
-```bash
-./gradlew assembleDebug
+### 5.3 Chay du an
+```powershell
+.\gradlew.bat :app:assembleDebug --console=plain
 ```
 
-## Dependencies
+Sau do chay app bang Android Studio (Run `app`).
 
-- **Google Maps**: `com.google.android.gms:play-services-maps:18.2.0`
-- **Location Services**: `com.google.android.gms:play-services-location:21.3.0`
-- **Maps Clustering**: `com.google.maps.android:android-maps-utils:3.8.2`
-- **Retrofit**: `com.squareup.retrofit2:retrofit:2.11.0`
-- **Gson**: `com.google.code.gson:gson:2.10.1`
-- **Coroutines**: `org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1`
-- **ViewModel & LiveData**: `androidx.lifecycle:lifecycle-*`
+---
 
-## Cách sử dụng
+## 6) Thu vien chinh dang dung
+- `com.google.android.gms:play-services-maps`
+- `com.google.android.gms:play-services-location`
+- `com.google.maps.android:android-maps-utils`
+- `com.squareup.retrofit2:retrofit`
+- `com.squareup.retrofit2:converter-gson`
+- `com.google.code.gson:gson`
+- `androidx.lifecycle` (ViewModel + LiveData)
+- `org.jetbrains.kotlinx:kotlinx-coroutines-android`
 
-1. **Khởi động app**: Map sẽ zoom vào khu vực Ninh Bình với tất cả các markers
-2. **Xem các địa điểm**: Zoom in/out để xem markers (tự động clustering)
-3. **Chọn địa điểm**: Click vào marker để xem thông tin chi tiết
-4. **Lấy vị trí**: Nhấn FAB button (biểu tượng vị trí) ở góc phải dưới
-5. **Chỉ đường**: 
-   - Nhấn "🗺️ Chỉ đường" để vẽ route trên map
-   - Nhấn "📍 Mở Google Maps" để chuyển sang Google Maps app
+---
 
-## Marker Clustering
+## 7) Luu y quan trong
+- Quyen vi tri (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) bat buoc cho chuc nang ve route.
+- Neu key sai/het quota, route va map API co the loi.
+- Du lieu lich trinh hien tai luu local tren may (SharedPreferences), chua dong bo cloud.
 
-App sử dụng **Google Maps Android Marker Clustering Utility** để:
-- Tự động nhóm markers gần nhau thành clusters
-- Hiển thị số lượng markers trong mỗi cluster
-- Mở rộng cluster khi zoom in hoặc click vào
-- Tối ưu hiệu năng khi có nhiều markers
+---
 
-## Kiến trúc
+## 8) Backlog de nang cap tiep
+- Them nut `Xoa tat ca` trong man hinh lich trinh.
+- Sap xep lich trinh theo thu tu/nhom danh muc.
+- Them test tu dong cho `ItineraryRepository`.
+- Polish UI theo Material 3 (icon, spacing, color consistency).
 
-- **MVVM (Model-View-ViewModel)**: Tách biệt logic và UI
-- **Repository Pattern**: Quản lý data source (JSON assets)
-- **LiveData**: Observe data changes
-- **Coroutines**: Async operations (API calls)
-- **ViewBinding**: Type-safe view access
+---
 
-## Lưu ý
-
-- Cần Internet để load Google Maps và Directions API
-- Cần cấp quyền Location để lấy vị trí hiện tại
-- API Key cần enable billing trên Google Cloud (miễn phí $200/tháng)
-
-## Tác giả
-
-Ninh Bình Tourism Map - 2026
+## 9) Tinh trang hien tai
+- Build debug da pass.
+- Chuc nang cot loi theo yeu cau hien tai da co.
+- Co the tiep tuc vao pha polish UI + test release.
 
