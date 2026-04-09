@@ -2,10 +2,7 @@ package com.example.map.ui.map
 // IMPORTS - Thư viện cần thiết cho app
 // Android Core - Các class cơ bản của Android
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -14,32 +11,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.core.graphics.toColorInt
 // App modules - Các class của project
 import com.example.map.R
 import com.example.map.data.model.LocationClusterItem
 import com.example.map.data.model.TouristLocation
 import com.example.map.databinding.ActivityMapBinding
-// Google Play Services - Location và Maps
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-
-// Google Maps Utils - Clustering
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.clustering.ClusterManager
-
-// Google Places API - Search địa điểm
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.net.PlacesClient
-
-// Geocoder - Để search địa điểm (fallback cho Places API)
-import android.location.Geocoder
-import com.example.map.ui.adater.SuggestionsAdapter
-import java.util.Locale
 
 // MAP ACTIVITY - Activity chính hiển thị bản đồ Ninh Bình
 /**
@@ -50,7 +37,7 @@ import java.util.Locale
  * 2. Hiển thị 12 địa điểm du lịch với marker clustering
  * 3. Lấy vị trí hiện tại của user
  * 4. Vẽ đường đi (polyline) từ vị trí hiện tại đến địa điểm
- * 5. Mở Google Maps app để navigation
+ * 5. Vẽ route trong app khi user bấm nút mở bản đồ
  *
  * Kiến trúc: MVVM (Model-View-ViewModel)
  */
@@ -76,17 +63,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     // Latitude: 20.2506, Longitude: 105.9745
     private val ninhBinhCenter = LatLng(20.2506, 105.9745)
 
-    // PLACES CLIENT - Để search địa điểm qua Google Places API
-    private lateinit var placesClient: PlacesClient
-
-    // GEOCODER - Fallback cho Places API (không cần billing)
-    private lateinit var geocoder: Geocoder
-
-    // SEARCH MARKER - Marker của địa điểm tìm kiếm
-    private var searchMarker: Marker? = null
-
-    // SUGGESTIONS ADAPTER - Adapter cho RecyclerView gợi ý
-    private lateinit var suggestionsAdapter: SuggestionsAdapter
+    // Lưu tạm địa điểm cần vẽ route khi đang chờ cấp quyền vị trí
+    private var pendingRouteDestination: TouristLocation? = null
 
     // LOCATION PERMISSION LAUNCHER
     // Xử lý request quyền truy cập vị trí từ user
@@ -101,6 +79,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (granted) {
             // Đã có quyền → Bật My Location trên map
             enableMyLocation()
+
+            // Nếu trước đó user bấm "Mở bản đồ" nhưng chưa có quyền, tiếp tục vẽ route ngay
+            pendingRouteDestination?.let { destination ->
+                getCurrentLocationAndDrawRoute(destination)
+                pendingRouteDestination = null
+            }
         } else {
             // Bị từ chối → Thông báo user
             Toast.makeText(this, "Cần quyền vị trí để sử dụng tính năng chỉ đường!", Toast.LENGTH_SHORT).show()
@@ -116,20 +100,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Khởi tạo Places API
-        initializePlaces()
-
-        // Khởi tạo Suggestions RecyclerView
-        setupSuggestionsRecyclerView()
-
         // Khởi tạo Google Map
         setupMap()
 
         // Setup các sự kiện click cho buttons
         setupClickListeners()
-
-        // Setup search functionality
-        setupSearch()
 
         // Observe (lắng nghe) các thay đổi từ ViewModel
         observeViewModel()
@@ -147,228 +122,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    // INITIALIZE PLACES API - Khởi tạo Google Places API
-    private fun initializePlaces() {
-        try {
-            // Khởi tạo Geocoder (Miễn phí, không cần billing)
-            geocoder = Geocoder(this, Locale("vi", "VN"))
-            Toast.makeText(this, "✓ Search đã sẵn sàng (Geocoder)", Toast.LENGTH_SHORT).show()
-
-            // Vẫn giữ Places API nếu có billing
-            try {
-                val ai = packageManager.getApplicationInfo(
-                    packageName,
-                    PackageManager.GET_META_DATA
-                )
-                val apiKey = ai.metaData?.getString("com.google.android.geo.API_KEY")
-
-                if (!apiKey.isNullOrEmpty() && !Places.isInitialized()) {
-                    Places.initialize(applicationContext, apiKey)
-                    placesClient = Places.createClient(this)
-                }
-            } catch (e: Exception) {
-                // Ignore - sẽ dùng Geocoder thay thế
-            }
-
-        } catch (e: Exception) {
-            Toast.makeText(this, "Lỗi khởi tạo Search: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // SETUP SUGGESTIONS RECYCLERVIEW - Khởi tạo RecyclerView gợi ý
-    // ══════════════════════════════════════════════════════════════
-    private fun setupSuggestionsRecyclerView() {
-        // Khởi tạo adapter với callback khi click vào suggestion
-        suggestionsAdapter = SuggestionsAdapter { suggestion ->
-            // Khi user click vào 1 suggestion
-            binding.searchView.setQuery(suggestion, true)  // Set text và submit search
-            hideSuggestions()  // Ẩn dropdown
-        }
-
-        // Setup RecyclerView
-        binding.suggestionsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MapActivity)
-            adapter = suggestionsAdapter
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // SHOW/HIDE SUGGESTIONS - Hiển thị/ẩn dropdown gợi ý
-    // ══════════════════════════════════════════════════════════════
-    private fun showSuggestions() {
-        binding.suggestionsCard.visibility = View.VISIBLE
-    }
-
-    private fun hideSuggestions() {
-        binding.suggestionsCard.visibility = View.GONE
-    }
-
-    // SETUP MAP - Khởi tạo SupportMapFragment
-    private fun setupSearch() {
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let {
-                    if (it.isNotEmpty()) {
-                        searchPlaces(it)
-                        hideSuggestions()  // Ẩn dropdown khi search
-                    } else {
-                        Toast.makeText(this@MapActivity, "Vui lòng nhập từ khóa tìm kiếm", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                // Ẩn keyboard
-                binding.searchView.clearFocus()
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                // Autocomplete suggestions khi user gõ
-                newText?.let {
-                    if (it.length >= 2) {
-                        // Chỉ search khi nhập ít nhất 2 ký tự
-                        showAutocompleteSuggestions(it)
-                    } else {
-                        // Ít hơn 2 ký tự → Ẩn dropdown
-                        hideSuggestions()
-                    }
-                } ?: run {
-                    // Text rỗng → Ẩn dropdown
-                    hideSuggestions()
-                }
-                return true
-            }
-        })
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // SHOW AUTOCOMPLETE SUGGESTIONS - Hiển thị gợi ý tự động
-    // Hiển thị trong RecyclerView dropdown dưới SearchView
-    // ══════════════════════════════════════════════════════════════
-    private fun showAutocompleteSuggestions(query: String) {
-        try {
-            // Sử dụng Geocoder để tìm gợi ý (miễn phí)
-            Thread {
-                try {
-                    val addresses = geocoder.getFromLocationName(
-                        "$query, Ninh Bình, Việt Nam",
-                        5  // Lấy tối đa 5 kết quả
-                    )
-
-                    runOnUiThread {
-                        if (!addresses.isNullOrEmpty()) {
-                            // Lấy tên địa điểm từ kết quả
-                            val suggestions = addresses
-                                .mapNotNull { it.featureName ?: it.locality ?: it.getAddressLine(0) }
-                                .distinct()  // Loại bỏ duplicate
-                                .take(5)     // Lấy tối đa 5 gợi ý
-
-                            if (suggestions.isNotEmpty()) {
-                                // Cập nhật adapter và hiển thị dropdown
-                                suggestionsAdapter.updateSuggestions(suggestions)
-                                showSuggestions()
-                            } else {
-                                // Không có gợi ý → Ẩn dropdown
-                                hideSuggestions()
-                            }
-                        } else {
-                            // Không có kết quả → Ẩn dropdown
-                            hideSuggestions()
-                        }
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        hideSuggestions()
-                    }
-                }
-            }.start()
-
-        } catch (e: Exception) {
-            hideSuggestions()
-        }
-    }
-
-    // SEARCH PLACES - Tìm kiếm địa điểm qua Geocoder API
-    // Sử dụng Geocoder thay vì Places API (miễn phí, không cần billing)
-    private fun searchPlaces(query: String) {
-        try {
-            // Hiển thị loading
-            binding.progressBar.visibility = View.VISIBLE
-
-            Toast.makeText(this, "Đang tìm: $query", Toast.LENGTH_SHORT).show()
-
-            // Tìm kiếm bất đồng bộ trên thread khác
-            Thread {
-                try {
-                    // Sử dụng Geocoder để tìm địa điểm
-                    val addresses = geocoder.getFromLocationName(
-                        "$query, Ninh Bình, Việt Nam",
-                        5  // Lấy tối đa 5 kết quả
-                    )
-
-                    runOnUiThread {
-                        binding.progressBar.visibility = View.GONE
-
-                        if (!addresses.isNullOrEmpty()) {
-                            val firstResult = addresses[0]
-                            val locationName = firstResult.featureName
-                                ?: firstResult.locality
-                                ?: query
-
-                            Toast.makeText(
-                                this,
-                                "✓ Tìm thấy: $locationName",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                            // Lấy tọa độ
-                            val latLng = LatLng(firstResult.latitude, firstResult.longitude)
-
-                            // Xóa marker search cũ
-                            searchMarker?.remove()
-
-                            // Thêm marker mới
-                            searchMarker = googleMap?.addMarker(
-                                MarkerOptions()
-                                    .position(latLng)
-                                    .title(locationName)
-                                    .snippet(firstResult.getAddressLine(0) ?: "")
-                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                            )
-
-                            // Zoom đến địa điểm
-                            googleMap?.animateCamera(
-                                CameraUpdateFactory.newLatLngZoom(latLng, 15f)
-                            )
-
-                            // Hiển thị info window
-                            searchMarker?.showInfoWindow()
-
-                        } else {
-                            Toast.makeText(
-                                this,
-                                "Không tìm thấy '$query' ở Ninh Bình",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        binding.progressBar.visibility = View.GONE
-                        Toast.makeText(
-                            this,
-                            "Lỗi tìm kiếm: ${e.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-            }.start()
-
-        } catch (e: Exception) {
-            binding.progressBar.visibility = View.GONE
-            Toast.makeText(this, "Lỗi search: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
     // SETUP CLICK LISTENERS - Xử lý các sự kiện click
     private fun setupClickListeners() {
 
@@ -379,38 +132,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             checkLocationPermissionAndGetLocation()
         }
 
-        // NÚT CHỈ ĐƯỜNG - Vẽ route từ vị trí hiện tại đến địa điểm
-        binding.btnGetDirections.setOnClickListener {
-            // Lấy vị trí hiện tại và địa điểm được chọn từ ViewModel
-            val currentLoc = viewModel.currentLocation.value
-            val selectedLoc = viewModel.selectedLocation.value
-
-            when {
-                // Case 1: Chưa có vị trí hiện tại
-                currentLoc == null -> {
-                    Toast.makeText(this, "Chưa lấy được vị trí của bạn!", Toast.LENGTH_SHORT).show()
-                    // Tự động yêu cầu lấy vị trí
-                    checkLocationPermissionAndGetLocation()
-                }
-
-                // Case 2: Chưa chọn địa điểm
-                selectedLoc == null -> {
-                    Toast.makeText(this, "Chưa chọn địa điểm!", Toast.LENGTH_SHORT).show()
-                }
-
-                // Case 3: Đã có đủ thông tin → Gọi Directions API
-                else -> {
-                    val destination = LatLng(selectedLoc.latitude, selectedLoc.longitude)
-                    viewModel.fetchDirections(currentLoc, destination)
-                }
-            }
+        // NÚT ĐƯA VỀ KHU VỰC GỢI Ý BAN ĐẦU (giống hành vi "Explore this area" của Google Maps)
+        binding.fabResetMap.setOnClickListener {
+            returnToSuggestedArea()
         }
 
-        // NÚT MỞ GOOGLE MAPS - Chuyển sang Google Maps app
-        // Sử dụng deep link để mở navigation
+        // NÚT VẼ TUYẾN - Nút duy nhất để vẽ line từ vị trí hiện tại đến địa điểm
         binding.btnOpenGoogleMaps.setOnClickListener {
-            viewModel.selectedLocation.value?.let { location ->
-                openGoogleMapsNavigation(location)
+            val destination = viewModel.selectedLocation.value
+            if (destination == null) {
+                Toast.makeText(this, "Chưa chọn địa điểm!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val destinationLatLng = LatLng(destination.latitude, destination.longitude)
+            val currentLoc = viewModel.currentLocation.value
+            if (currentLoc != null) {
+                viewModel.fetchDirections(currentLoc, destinationLatLng)
+            } else {
+                // Chưa có current location trong ViewModel -> lấy nhanh từ FusedLocation rồi vẽ route
+                getCurrentLocationAndDrawRoute(destination)
             }
         }
     }
@@ -421,8 +162,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         // OBSERVE LOCATIONS - Danh sách địa điểm
         // Khi danh sách địa điểm được load, thêm markers lên map
         viewModel.locations.observe(this) { locations ->
-            googleMap?.let { map ->
-                addMarkersToMap(map, locations)
+            if (googleMap != null) {
+                addMarkersToMap(locations)
             }
         }
 
@@ -445,10 +186,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 // Vẽ polyline mới
                 currentPolyline = googleMap?.addPolyline(
                     PolylineOptions()
-                        .addAll(points)                    // Thêm tất cả điểm
-                        .color(Color.parseColor("#2196F3")) // Màu xanh Material Blue
-                        .width(12f)                         // Độ rộng 12px
-                        .geodesic(true)                     // Đường cong theo bề mặt trái đất
+                        .addAll(points)
+                        .color("#2196F3".toColorInt())
+                        .width(12f)
+                        .geodesic(true)
                 )
 
                 // Zoom camera để thấy toàn bộ route
@@ -504,7 +245,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         setupClusterManager(map)
         // ADD MARKERS - Thêm markers nếu data đã sẵn sàng
         viewModel.locations.value?.let { locations ->
-            addMarkersToMap(map, locations)
+            addMarkersToMap(locations)
         }
 
         // LOCATION PERMISSION - Kiểm tra và bật My Location
@@ -514,6 +255,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // SETUP CLUSTER MANAGER - Cấu hình marker clustering
+    @Suppress("PotentialBehaviorOverride")
     private fun setupClusterManager(map: GoogleMap) {
         // Khởi tạo ClusterManager
         clusterManager = ClusterManager<LocationClusterItem>(this, map)
@@ -554,17 +296,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // ADD MARKERS TO MAP - Thêm markers lên map với clustering
-    private fun addMarkersToMap(map: GoogleMap, locations: List<TouristLocation>) {
-        // Xóa tất cả markers cũ
+    private fun addMarkersToMap(locations: List<TouristLocation>) {
         clusterManager?.clearItems()
 
-        // Thêm từng địa điểm vào ClusterManager
         locations.forEach { location ->
             val clusterItem = LocationClusterItem(location)
             clusterManager?.addItem(clusterItem)
         }
 
-        // Trigger clustering algorithm
         clusterManager?.cluster()
     }
 
@@ -598,29 +337,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    // OPEN GOOGLE MAPS NAVIGATION - Mở Google Maps app
-    // Sử dụng Intent với deep link để mở navigation mode
-    private fun openGoogleMapsNavigation(location: TouristLocation) {
-        // Tạo URI cho Google Maps navigation
-        val uri = Uri.parse(
-            "google.navigation:q=${location.latitude},${location.longitude}&mode=d"
-        )
-
-        // Tạo Intent với package Google Maps
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-            setPackage("com.google.android.apps.maps")
+    // Lấy vị trí hiện tại rồi vẽ route trong app; không tự mở Google Maps
+    private fun getCurrentLocationAndDrawRoute(destination: TouristLocation) {
+        if (!hasLocationPermission()) {
+            pendingRouteDestination = destination
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+            return
         }
 
-        // Kiểm tra xem có Google Maps app không
-        if (intent.resolveActivity(packageManager) != null) {
-            // Có app → Mở Google Maps
-            startActivity(intent)
-        } else {
-            // Không có app → Fallback sang browser
-            val webUri = Uri.parse(
-                "https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}"
-            )
-            startActivity(Intent(Intent.ACTION_VIEW, webUri))
+        try {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val current = LatLng(location.latitude, location.longitude)
+                    viewModel.updateCurrentLocation(current)
+
+                    // Vẽ route line trong app
+                    viewModel.fetchDirections(current, LatLng(destination.latitude, destination.longitude))
+                } else {
+                    Toast.makeText(this, "Chưa lấy được vị trí chính xác, vui lòng thử lại", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener {
+                Toast.makeText(this, "Không lấy được vị trí hiện tại, vui lòng thử lại", Toast.LENGTH_SHORT).show()
+            }
+        } catch (_: SecurityException) {
+            Toast.makeText(this, "Lỗi quyền vị trí, vui lòng thử lại", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -633,7 +379,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         return ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
     /**
@@ -661,9 +411,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun enableMyLocation() {
         if (hasLocationPermission()) {
             try {
-                googleMap?.isMyLocationEnabled = true           // Bật My Location
-                googleMap?.uiSettings?.isMyLocationButtonEnabled = false  // Ẩn nút mặc định (dùng FAB)
-            } catch (e: SecurityException) {
+                googleMap?.isMyLocationEnabled = true
+                googleMap?.uiSettings?.isMyLocationButtonEnabled = false
+            } catch (_: SecurityException) {
                 Toast.makeText(this, "Lỗi quyền vị trí!", Toast.LENGTH_SHORT).show()
             }
         }
@@ -703,8 +453,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     Toast.makeText(this, "Chưa lấy được vị trí, thử lại!", Toast.LENGTH_SHORT).show()
                 }
             }
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             Toast.makeText(this, "Lỗi quyền vị trí!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Đưa bản đồ về vùng địa điểm gợi ý ban đầu của Ninh Bình
+    private fun returnToSuggestedArea() {
+        val map = googleMap ?: return
+
+
+        // Xóa route hiện tại
+        currentPolyline?.remove()
+        currentPolyline = null
+        viewModel.clearRoute()
+
+        // Bỏ chọn địa điểm để ẩn info card
+        binding.cardLocationInfo.visibility = View.GONE
+
+        // Nạp lại marker gợi ý ban đầu
+        viewModel.locations.value?.let { locations ->
+            addMarkersToMap(locations)
+        }
+
+        // Đưa camera về khu vực Ninh Bình như lúc mở app
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(ninhBinhCenter, 10f))
     }
 }
