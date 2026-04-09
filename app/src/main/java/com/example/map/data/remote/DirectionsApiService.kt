@@ -8,8 +8,8 @@ interface DirectionsApiService {
 
     @GET("maps/api/directions/json")
     suspend fun getDirections(
-        @Query("origin") origin: String,         // "lat,lng"
-        @Query("destination") destination: String, // "lat,lng"
+        @Query("origin") origin: String,
+        @Query("destination") destination: String,
         @Query("key") apiKey: String,
         @Query("mode") mode: String = "driving"
     ): DirectionsResponse

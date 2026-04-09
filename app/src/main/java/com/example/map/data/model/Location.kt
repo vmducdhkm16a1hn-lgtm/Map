@@ -6,5 +6,6 @@ data class TouristLocation(
     val description: String,
     val latitude: Double,
     val longitude: Double,
-    val imageRes: Int = 0  // resource id ảnh thumbnail (tuỳ chọn)
-) 
+    val imageRes: Int = 0,
+    val imageName: String = ""
+)
