@@ -2,6 +2,7 @@ package com.example.map.ui.map
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -12,11 +13,13 @@ import com.example.map.data.repository.ItineraryRepository
 import com.example.map.data.repository.LocationRepository
 import com.example.map.databinding.ActivityHomeBinding
 import com.example.map.ui.adapter.HomeLocationAdapter
+import com.example.map.ui.adapter.SuggestionsAdapter
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var adapter: HomeLocationAdapter
+    private lateinit var suggestionsAdapter: SuggestionsAdapter
 
     private var allLocations: List<TouristLocation> = emptyList()
     private var selectedCategory: String = CATEGORY_ALL
@@ -48,6 +51,17 @@ class HomeActivity : AppCompatActivity() {
         )
         binding.rvLocations.layoutManager = LinearLayoutManager(this)
         binding.rvLocations.adapter = adapter
+
+        suggestionsAdapter = SuggestionsAdapter { selectedLocation ->
+            binding.searchView.setQuery(selectedLocation.name, false)
+            searchKeyword = selectedLocation.name
+            applyFilter()
+            showSuggestions(false)
+            binding.searchView.clearFocus()
+            openLocationDetail(selectedLocation)
+        }
+        binding.rvSuggestions.layoutManager = LinearLayoutManager(this)
+        binding.rvSuggestions.adapter = suggestionsAdapter
     }
 
     private fun setupItineraryButton() {
@@ -69,6 +83,8 @@ class HomeActivity : AppCompatActivity() {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     searchKeyword = query.orEmpty().trim()
                     applyFilter()
+                    updateSuggestions()
+                    showSuggestions(false)
                     clearFocus()
                     return true
                 }
@@ -76,9 +92,18 @@ class HomeActivity : AppCompatActivity() {
                 override fun onQueryTextChange(newText: String?): Boolean {
                     searchKeyword = newText.orEmpty().trim()
                     applyFilter()
+                    updateSuggestions()
                     return true
                 }
             })
+
+            setOnQueryTextFocusChangeListener { _, hasFocus ->
+                if (!hasFocus && searchKeyword.isBlank()) {
+                    showSuggestions(false)
+                } else if (hasFocus && searchKeyword.isNotBlank()) {
+                    showSuggestions(true)
+                }
+            }
         }
     }
 
@@ -116,6 +141,7 @@ class HomeActivity : AppCompatActivity() {
     private fun loadData() {
         allLocations = LocationRepository(this).getNinhBinhLocations()
         applyFilter()
+        updateSuggestions()
     }
 
     private fun applyFilter() {
@@ -128,6 +154,25 @@ class HomeActivity : AppCompatActivity() {
             matchCategory && matchKeyword
         }
         adapter.submitList(filtered)
+    }
+
+    private fun updateSuggestions() {
+        if (searchKeyword.isBlank()) {
+            suggestionsAdapter.clearSuggestions()
+            return
+        }
+
+        val suggestions = allLocations.filter { location ->
+            location.name.contains(searchKeyword, ignoreCase = true) ||
+                location.description.contains(searchKeyword, ignoreCase = true)
+        }.take(8)
+
+        suggestionsAdapter.updateSuggestions(suggestions)
+        showSuggestions(suggestions.isNotEmpty())
+    }
+
+    private fun showSuggestions(show: Boolean) {
+        binding.rvSuggestions.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     private fun detectCategory(location: TouristLocation): String {
